@@ -1,9 +1,13 @@
 // ============================================================
-//  ¿Me conoces? — edita este archivo con tus propias preguntas
+//  ¿Me conoces? — quiz de ejemplo por defecto
 // ============================================================
+//  Este es el quiz que se muestra si todavía no creaste el tuyo.
+//  Para personalizarlo, usa el botón "Crear o personalizar mi quiz"
+//  dentro de la página; ahí se guarda en tu navegador y puedes generar
+//  un enlace para tus amigos.
+//
 //  "respuesta" es el índice (empezando en 0) de la opción correcta.
 //  Ejemplo: en ["Pizza", "Sushi", "Tacos", "Hamburguesa"], "Tacos" es 2.
-//  Las preguntas de abajo son de ejemplo: cámbialas por datos reales.
 
 const NOMBRE_QUIZ = "¿Me conoces?";
 

@@ -41,34 +41,36 @@
       color: var(--text);
       font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
       display: flex;
-      align-items: center;
-      justify-content: center;
       padding: 16px;
     }
     .card {
       width: 100%;
-      max-width: 520px;
+      max-width: 560px;
+      margin: auto;
       background: var(--card);
       border: 1px solid var(--border);
       border-radius: 20px;
       padding: 28px 24px;
       box-shadow: 0 10px 30px rgba(60, 30, 100, 0.08);
     }
-    h1 { font-size: 1.6rem; margin: 0 0 8px; }
-    h2 { font-size: 1.3rem; margin: 0 0 12px; }
+    h1 { font-size: 1.6rem; margin: 0 0 8px; overflow-wrap: anywhere; }
+    h2 { font-size: 1.3rem; margin: 0 0 12px; overflow-wrap: anywhere; }
     p { line-height: 1.5; margin: 0 0 16px; }
     .muted { color: var(--muted); }
+    .small { font-size: 0.85rem; }
+    .centro { text-align: center; }
     .hidden { display: none !important; }
+    .etiqueta { display: block; margin-bottom: 6px; font-size: 0.95rem; color: var(--muted); }
 
-    input[type="text"] {
+    .campo {
       width: 100%;
       padding: 12px 14px;
-      font-size: 1rem;
+      font: inherit;
       border-radius: 12px;
       border: 1px solid var(--border);
       background: transparent;
       color: var(--text);
-      margin-bottom: 16px;
+      margin-bottom: 12px;
     }
 
     button {
@@ -86,6 +88,18 @@
     button:active { transform: scale(0.98); }
     button:disabled { opacity: 0.5; cursor: default; }
     .btn-full { width: 100%; }
+    .btn-secundario {
+      background: transparent;
+      color: var(--accent-2);
+      border: 2px solid var(--accent-2);
+    }
+    .link-btn {
+      background: transparent;
+      color: var(--muted);
+      font-weight: 500;
+      padding: 6px 8px;
+    }
+    .stack { display: grid; gap: 10px; }
 
     .progreso {
       height: 8px;
@@ -118,6 +132,15 @@
     .feedback.ok { color: var(--ok); }
     .feedback.bad { color: var(--bad); }
 
+    .aviso {
+      background: rgba(255, 84, 112, 0.12);
+      color: var(--bad);
+      padding: 10px 12px;
+      border-radius: 12px;
+      margin-bottom: 14px;
+      font-weight: 500;
+    }
+
     .puntaje {
       font-size: 3.2rem;
       font-weight: 800;
@@ -128,30 +151,55 @@
       color: transparent;
       margin: 8px 0;
     }
-    .centro { text-align: center; }
-    .stack { display: grid; gap: 10px; }
-    .link-btn {
-      background: transparent;
-      color: var(--muted);
-      font-weight: 500;
-      padding: 8px;
+
+    /* Editor */
+    .tarjeta {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px;
+      margin-bottom: 14px;
     }
+    .fila {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .fila-opcion { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+    .fila-opcion .campo { margin: 0; padding: 10px 12px; }
+    .fila-opcion input[type="radio"] {
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+      accent-color: var(--ok);
+      cursor: pointer;
+    }
+    .fila-enlace { display: flex; gap: 8px; }
+    .fila-enlace .campo { margin: 0; }
+    .fila-enlace button { white-space: nowrap; }
+    .acciones { margin-top: 16px; }
+    .mensaje-editor { min-height: 1.4em; font-weight: 600; margin-bottom: 12px; overflow-wrap: anywhere; }
   </style>
 </head>
 <body>
   <main class="card">
 
-    <!-- Pantalla de inicio -->
+    <!-- Inicio -->
     <section id="inicio">
       <h1 id="titulo-inicio"></h1>
       <p class="muted">Responde estas preguntas y descubre cuánto me conoces de verdad.</p>
-      <label for="nombre" class="muted" style="display:block; margin-bottom:6px;">¿Cómo te llamas?</label>
-      <input id="nombre" type="text" maxlength="30" placeholder="Tu nombre (opcional)">
-      <button id="btn-empezar" class="btn-full">Empezar</button>
+      <p id="aviso-enlace" class="aviso hidden">Ese enlace no es válido, así que se cargó el quiz por defecto.</p>
+      <label for="nombre" class="etiqueta">¿Cómo te llamas?</label>
+      <input id="nombre" class="campo" type="text" maxlength="30" placeholder="Tu nombre (opcional)">
+      <div class="stack">
+        <button id="btn-jugar" class="btn-full">Jugar</button>
+        <button id="btn-ir-crear" class="btn-secundario btn-full">Crear o personalizar mi quiz</button>
+      </div>
     </section>
 
-    <!-- Pantalla de preguntas -->
-    <section id="quiz" class="hidden">
+    <!-- Preguntas -->
+    <section id="jugar" class="hidden">
       <div class="progreso"><div id="barra" class="progreso-barra"></div></div>
       <div id="contador" class="contador"></div>
       <h2 id="pregunta"></h2>
@@ -160,16 +208,47 @@
       <button id="btn-siguiente" class="btn-full" disabled>Siguiente</button>
     </section>
 
-    <!-- Pantalla de resultados -->
+    <!-- Resultado -->
     <section id="resultado" class="hidden centro">
-      <p class="muted" id="saludo"></p>
+      <p id="saludo" class="muted"></p>
       <div id="puntaje" class="puntaje"></div>
       <h2 id="res-titulo"></h2>
       <p id="res-texto" class="muted"></p>
       <div class="stack">
         <button id="btn-reiniciar" class="btn-full">Jugar otra vez</button>
         <button id="btn-compartir" class="link-btn">Copiar resultado</button>
+        <button id="btn-crear-propio" class="btn-secundario btn-full">Crea tu propio quiz</button>
       </div>
+    </section>
+
+    <!-- Editor -->
+    <section id="crear" class="hidden">
+      <h2>Crear mi quiz</h2>
+      <p class="muted">Escribe tus preguntas y marca el círculo de la respuesta correcta. Guarda para usarlo en este navegador, o genera un enlace para tus amigos.</p>
+
+      <label for="ed-titulo" class="etiqueta">Título del quiz</label>
+      <input id="ed-titulo" class="campo" type="text" maxlength="60" placeholder="Ej. ¿Cuánto me conoces, Ana?">
+
+      <div id="lista-preguntas"></div>
+      <button id="btn-agregar-pregunta" class="btn-secundario btn-full">+ Agregar pregunta</button>
+
+      <div class="acciones stack">
+        <div id="mensaje-editor" class="mensaje-editor"></div>
+        <button id="btn-guardar">Guardar mi quiz</button>
+        <button id="btn-probar" class="btn-secundario">Probar</button>
+        <button id="btn-enlace" class="btn-secundario">Generar enlace para amigos</button>
+      </div>
+
+      <div id="bloque-enlace" class="hidden" style="margin-top: 16px;">
+        <label for="enlace" class="etiqueta">Enlace para compartir</label>
+        <div class="fila-enlace">
+          <input id="enlace" class="campo" type="text" readonly>
+          <button id="btn-copiar-enlace">Copiar</button>
+        </div>
+        <p class="muted small">Cualquiera con el enlace puede jugar. Las respuestas van dentro del enlace, así que es un juego entre amigos, no un secreto.</p>
+      </div>
+
+      <button id="btn-volver" class="link-btn btn-full" style="margin-top: 12px;">Volver al inicio</button>
     </section>
 
   </main>
@@ -179,34 +258,145 @@
     (function () {
       const $ = (id) => document.getElementById(id);
       const LETRAS = ["A", "B", "C", "D", "E", "F"];
+      const CLAVE = "meconoces-mi-quiz";
+      const MIN_OPCIONES = 2;
+      const MAX_OPCIONES = 6;
+      const OPCIONES_INICIALES = 4;
 
+      let quiz;          // quiz que se juega ahora (enlace, guardado o de ejemplo)
+      let miQuiz;        // tu quiz guardado (o el de ejemplo)
+      let borrador;      // lo que estás editando en "Crear"
+      let avisoEnlace = false;
       let orden = [];
       let indice = 0;
       let aciertos = 0;
       let respondida = false;
       let nombre = "";
 
+      // ---------- Utilidades ----------
+
+      const copia = (obj) => JSON.parse(JSON.stringify(obj));
+
+      function el(tag, clase, texto) {
+        const e = document.createElement(tag);
+        if (clase) e.className = clase;
+        if (texto !== undefined) e.textContent = texto;
+        return e;
+      }
+
+      function boton(texto, clase, alHacerClic) {
+        const b = el("button", clase, texto);
+        b.type = "button";
+        b.addEventListener("click", alHacerClic);
+        return b;
+      }
+
       function mezclar(lista) {
-        const copia = lista.slice();
-        for (let i = copia.length - 1; i > 0; i--) {
+        const c = lista.slice();
+        for (let i = c.length - 1; i > 0; i--) {
           const j = Math.floor(Math.random() * (i + 1));
-          [copia[i], copia[j]] = [copia[j], copia[i]];
+          [c[i], c[j]] = [c[j], c[i]];
         }
-        return copia;
+        return c;
       }
 
       function mostrar(seccion) {
-        ["inicio", "quiz", "resultado"].forEach((id) => {
+        ["inicio", "jugar", "resultado", "crear"].forEach((id) => {
           $(id).classList.toggle("hidden", id !== seccion);
         });
       }
 
+      function copiarTexto(texto, boton, textoOriginal) {
+        const marcar = (msg) => {
+          boton.textContent = msg;
+          setTimeout(() => (boton.textContent = textoOriginal), 1500);
+        };
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(texto).then(
+            () => marcar("¡Copiado!"),
+            () => marcar("No se pudo copiar")
+          );
+        } else {
+          marcar("No se pudo copiar");
+        }
+      }
+
+      // ---------- Codificación para enlaces ----------
+      // encodeURIComponent deja solo ASCII, así que btoa es seguro con acentos y emojis.
+
+      function codificar(obj) {
+        return btoa(encodeURIComponent(JSON.stringify(obj)));
+      }
+
+      function decodificar(texto) {
+        return JSON.parse(decodeURIComponent(atob(texto)));
+      }
+
+      function validarQuiz(d) {
+        const valido =
+          d && typeof d.titulo === "string" && Array.isArray(d.preguntas) && d.preguntas.length > 0 &&
+          d.preguntas.every((p) =>
+            p && typeof p.pregunta === "string" &&
+            Array.isArray(p.opciones) && p.opciones.length >= MIN_OPCIONES &&
+            p.opciones.every((o) => typeof o === "string") &&
+            Number.isInteger(p.respuesta) && p.respuesta >= 0 && p.respuesta < p.opciones.length
+          );
+        if (!valido) throw new Error("Quiz no válido");
+        return {
+          titulo: d.titulo.trim() || NOMBRE_QUIZ,
+          preguntas: d.preguntas.map((p) => ({
+            pregunta: p.pregunta,
+            opciones: p.opciones.slice(),
+            respuesta: p.respuesta,
+          })),
+        };
+      }
+
+      function quizDesdeEnlace() {
+        const m = location.hash.match(/^#q=(.+)$/);
+        if (!m) return null;
+        try {
+          return validarQuiz(decodificar(m[1]));
+        } catch (e) {
+          avisoEnlace = true;
+          return null;
+        }
+      }
+
+      // ---------- Almacenamiento local (puede fallar en modo privado) ----------
+
+      function leerMiQuiz() {
+        try {
+          const guardado = localStorage.getItem(CLAVE);
+          if (guardado) return validarQuiz(JSON.parse(guardado));
+        } catch (e) { /* sin guardado válido: usamos el de ejemplo */ }
+        return { titulo: NOMBRE_QUIZ, preguntas: copia(PREGUNTAS) };
+      }
+
+      function guardarMiQuiz(q) {
+        try {
+          localStorage.setItem(CLAVE, JSON.stringify(q));
+          return true;
+        } catch (e) {
+          return false;
+        }
+      }
+
+      // ---------- Jugar ----------
+
+      function mostrarInicio() {
+        $("titulo-inicio").textContent = quiz.titulo;
+        document.title = quiz.titulo;
+        $("aviso-enlace").classList.toggle("hidden", !avisoEnlace);
+        mostrar("inicio");
+      }
+
       function iniciar() {
         nombre = $("nombre").value.trim();
-        orden = mezclar(PREGUNTAS);
+        orden = mezclar(quiz.preguntas);
         indice = 0;
         aciertos = 0;
-        mostrar("quiz");
+        mostrar("jugar");
         mostrarPregunta();
       }
 
@@ -226,9 +416,7 @@
         const cont = $("opciones");
         cont.innerHTML = "";
         p.opciones.forEach((texto, i) => {
-          const b = document.createElement("button");
-          b.className = "opcion";
-          b.textContent = LETRAS[i] + ". " + texto;
+          const b = el("button", "opcion", LETRAS[i] + ". " + texto);
           b.addEventListener("click", () => responder(i));
           cont.appendChild(b);
         });
@@ -238,12 +426,10 @@
         if (respondida) return;
         respondida = true;
         const p = orden[indice];
-        const botones = $("opciones").children;
         const esCorrecta = elegida === p.respuesta;
-
         if (esCorrecta) aciertos++;
 
-        Array.from(botones).forEach((b, i) => {
+        Array.from($("opciones").children).forEach((b, i) => {
           b.disabled = true;
           if (i === p.respuesta) b.classList.add("correcta");
           else if (i === elegida) b.classList.add("incorrecta");
@@ -279,35 +465,192 @@
         mostrar("resultado");
       }
 
-      function copiarResultado() {
-        const texto = "Saqué " + aciertos + " de " + orden.length + " en " + NOMBRE_QUIZ + " — " + $("res-titulo").textContent;
-        const btn = $("btn-compartir");
-        const marcar = (msg) => {
-          btn.textContent = msg;
-          setTimeout(() => (btn.textContent = "Copiar resultado"), 1500);
-        };
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-          navigator.clipboard.writeText(texto).then(
-            () => marcar("¡Copiado!"),
-            () => marcar("No se pudo copiar")
-          );
-        } else {
-          marcar("No se pudo copiar");
-        }
+      // ---------- Crear / editar ----------
+
+      function abrirEditor() {
+        borrador = copia(miQuiz);
+        $("ed-titulo").value = borrador.titulo;
+        $("bloque-enlace").classList.add("hidden");
+        mensaje("", null);
+        renderEditor();
+        mostrar("crear");
       }
 
+      function renderEditor() {
+        $("ed-titulo").value = borrador.titulo;
+        const lista = $("lista-preguntas");
+        lista.innerHTML = "";
+        borrador.preguntas.forEach((p, qi) => lista.appendChild(tarjetaPregunta(p, qi)));
+      }
+
+      function tarjetaPregunta(p, qi) {
+        const card = el("div", "tarjeta");
+
+        const cabecera = el("div", "fila");
+        cabecera.appendChild(el("strong", null, "Pregunta " + (qi + 1)));
+        const quitarPregunta = boton("✕ Eliminar", "link-btn", () => {
+          borrador.preguntas.splice(qi, 1);
+          renderEditor();
+        });
+        quitarPregunta.disabled = borrador.preguntas.length <= 1;
+        cabecera.appendChild(quitarPregunta);
+        card.appendChild(cabecera);
+
+        const input = el("input", "campo");
+        input.type = "text";
+        input.placeholder = "Escribe la pregunta";
+        input.maxLength = 200;
+        input.value = p.pregunta;
+        input.addEventListener("input", () => (p.pregunta = input.value));
+        card.appendChild(input);
+
+        p.opciones.forEach((texto, oi) => {
+          const fila = el("div", "fila-opcion");
+
+          const radio = el("input");
+          radio.type = "radio";
+          radio.name = "correcta-" + qi;
+          radio.title = "Respuesta correcta";
+          radio.checked = p.respuesta === oi;
+          radio.addEventListener("change", () => (p.respuesta = oi));
+
+          const txt = el("input", "campo");
+          txt.type = "text";
+          txt.placeholder = "Opción " + LETRAS[oi];
+          txt.maxLength = 120;
+          txt.value = texto;
+          txt.addEventListener("input", () => (p.opciones[oi] = txt.value));
+
+          const quitar = boton("✕", "link-btn", () => {
+            if (p.opciones.length <= MIN_OPCIONES) return;
+            p.opciones.splice(oi, 1);
+            if (p.respuesta === oi) p.respuesta = 0;
+            else if (p.respuesta > oi) p.respuesta--;
+            renderEditor();
+          });
+          quitar.disabled = p.opciones.length <= MIN_OPCIONES;
+
+          fila.append(radio, txt, quitar);
+          card.appendChild(fila);
+        });
+
+        const agregarOpcion = boton("+ Opción", "link-btn", () => {
+          if (p.opciones.length >= MAX_OPCIONES) return;
+          p.opciones.push("");
+          renderEditor();
+        });
+        agregarOpcion.disabled = p.opciones.length >= MAX_OPCIONES;
+        agregarOpcion.style.marginTop = "8px";
+        card.appendChild(agregarOpcion);
+
+        return card;
+      }
+
+      function agregarPregunta() {
+        borrador.preguntas.push({
+          pregunta: "",
+          opciones: Array(OPCIONES_INICIALES).fill(""),
+          respuesta: 0,
+        });
+        renderEditor();
+      }
+
+      function mensaje(texto, tipo) {
+        const m = $("mensaje-editor");
+        m.textContent = texto;
+        m.className = "mensaje-editor" + (tipo ? " feedback " + tipo : "");
+      }
+
+      function revisarBorrador() {
+        if (!borrador.titulo.trim()) return "Ponle un título a tu quiz.";
+        if (!borrador.preguntas.length) return "Agrega al menos una pregunta.";
+        for (let i = 0; i < borrador.preguntas.length; i++) {
+          const p = borrador.preguntas[i];
+          if (!p.pregunta.trim()) return "La pregunta " + (i + 1) + " está vacía.";
+          if (p.opciones.some((o) => !o.trim())) return "Completa todas las opciones de la pregunta " + (i + 1) + ".";
+        }
+        return null;
+      }
+
+      function limpiarBorrador() {
+        return {
+          titulo: borrador.titulo.trim(),
+          preguntas: borrador.preguntas.map((p) => ({
+            pregunta: p.pregunta.trim(),
+            opciones: p.opciones.map((o) => o.trim()),
+            respuesta: p.respuesta,
+          })),
+        };
+      }
+
+      // Valida y guarda. Devuelve el quiz limpio o null si hay errores.
+      function guardarBorrador() {
+        const error = revisarBorrador();
+        if (error) {
+          mensaje(error, "bad");
+          return null;
+        }
+        const limpio = limpiarBorrador();
+        miQuiz = limpio;
+        quiz = limpio;
+        return limpio;
+      }
+
+      function guardar() {
+        if (!guardarBorrador()) return;
+        const ok = guardarMiQuiz(miQuiz);
+        mensaje(
+          ok ? "¡Guardado! Ya es tu quiz en este navegador." : "No se pudo guardar en este navegador, pero puedes generar el enlace.",
+          ok ? "ok" : "bad"
+        );
+      }
+
+      function generarEnlace() {
+        if (!guardarBorrador()) return;
+        guardarMiQuiz(miQuiz);
+        const base = location.href.split("#")[0];
+        $("enlace").value = base + "#q=" + codificar(miQuiz);
+        $("bloque-enlace").classList.remove("hidden");
+        mensaje("Enlace listo. Compártelo con tus amigos.", "ok");
+        $("enlace").select();
+      }
+
+      function probar() {
+        if (!guardarBorrador()) return;
+        iniciar();
+      }
+
+      // ---------- Arranque ----------
+
       function init() {
-        document.title = NOMBRE_QUIZ;
-        $("titulo-inicio").textContent = NOMBRE_QUIZ;
-        $("btn-empezar").addEventListener("click", iniciar);
-        $("nombre").addEventListener("keydown", (e) => { if (e.key === "Enter") iniciar(); });
+        const desdeEnlace = quizDesdeEnlace();
+        miQuiz = leerMiQuiz();
+        quiz = desdeEnlace || miQuiz;
+
+        $("ed-titulo").addEventListener("input", (e) => (borrador.titulo = e.target.value));
+        $("btn-jugar").addEventListener("click", iniciar);
+        $("nombre").addEventListener("keydown", (e) => { if (e.key === "Enter") $("btn-jugar").click(); });
+        $("btn-ir-crear").addEventListener("click", abrirEditor);
         $("btn-siguiente").addEventListener("click", siguiente);
         $("btn-reiniciar").addEventListener("click", () => {
           $("nombre").value = nombre;
-          mostrar("inicio");
+          mostrarInicio();
         });
-        $("btn-compartir").addEventListener("click", copiarResultado);
-        mostrar("inicio");
+        $("btn-compartir").addEventListener("click", () => {
+          const texto = "Saqué " + aciertos + " de " + orden.length + " en " + quiz.titulo + " — " + $("res-titulo").textContent;
+          copiarTexto(texto, $("btn-compartir"), "Copiar resultado");
+        });
+        $("btn-crear-propio").addEventListener("click", abrirEditor);
+        $("btn-agregar-pregunta").addEventListener("click", agregarPregunta);
+        $("btn-guardar").addEventListener("click", guardar);
+        $("btn-probar").addEventListener("click", probar);
+        $("btn-enlace").addEventListener("click", generarEnlace);
+        $("btn-copiar-enlace").addEventListener("click", () => {
+          copiarTexto($("enlace").value, $("btn-copiar-enlace"), "Copiar");
+        });
+        $("btn-volver").addEventListener("click", mostrarInicio);
+
+        mostrarInicio();
       }
 
       init();
