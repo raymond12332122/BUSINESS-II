@@ -1,0 +1,317 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>¿Me conoces?</title>
+  <style>
+    :root {
+      --bg: #fff7f0;
+      --card: #ffffff;
+      --text: #2b2140;
+      --muted: #7a6f8f;
+      --accent: #ff6b6b;
+      --accent-2: #7c5cff;
+      --ok: #2fbf71;
+      --bad: #ff5470;
+      --border: #ece4f5;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --bg: #1b1526;
+        --card: #261f36;
+        --text: #f3eefc;
+        --muted: #a79cc2;
+        --border: #3a3050;
+      }
+    }
+    :root[data-theme="dark"] {
+      --bg: #1b1526;
+      --card: #261f36;
+      --text: #f3eefc;
+      --muted: #a79cc2;
+      --border: #3a3050;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .card {
+      width: 100%;
+      max-width: 520px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 28px 24px;
+      box-shadow: 0 10px 30px rgba(60, 30, 100, 0.08);
+    }
+    h1 { font-size: 1.6rem; margin: 0 0 8px; }
+    h2 { font-size: 1.3rem; margin: 0 0 12px; }
+    p { line-height: 1.5; margin: 0 0 16px; }
+    .muted { color: var(--muted); }
+    .hidden { display: none !important; }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 12px 14px;
+      font-size: 1rem;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text);
+      margin-bottom: 16px;
+    }
+
+    button {
+      font: inherit;
+      cursor: pointer;
+      border: none;
+      border-radius: 12px;
+      padding: 12px 18px;
+      background: var(--accent-2);
+      color: #fff;
+      font-weight: 600;
+      transition: transform 0.05s ease, opacity 0.2s;
+    }
+    button:hover { opacity: 0.92; }
+    button:active { transform: scale(0.98); }
+    button:disabled { opacity: 0.5; cursor: default; }
+    .btn-full { width: 100%; }
+
+    .progreso {
+      height: 8px;
+      background: var(--border);
+      border-radius: 99px;
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+    .progreso-barra {
+      height: 100%;
+      width: 0;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      transition: width 0.3s ease;
+    }
+    .contador { font-size: 0.85rem; color: var(--muted); margin-bottom: 18px; }
+
+    .opciones { display: grid; gap: 10px; margin-bottom: 18px; }
+    .opcion {
+      background: transparent;
+      color: var(--text);
+      border: 2px solid var(--border);
+      text-align: left;
+      font-weight: 500;
+    }
+    .opcion:hover:not(:disabled) { border-color: var(--accent-2); opacity: 1; }
+    .opcion.correcta { border-color: var(--ok); background: rgba(47, 191, 113, 0.15); }
+    .opcion.incorrecta { border-color: var(--bad); background: rgba(255, 84, 112, 0.15); }
+
+    .feedback { min-height: 1.4em; font-weight: 600; margin-bottom: 14px; }
+    .feedback.ok { color: var(--ok); }
+    .feedback.bad { color: var(--bad); }
+
+    .puntaje {
+      font-size: 3.2rem;
+      font-weight: 800;
+      text-align: center;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      margin: 8px 0;
+    }
+    .centro { text-align: center; }
+    .stack { display: grid; gap: 10px; }
+    .link-btn {
+      background: transparent;
+      color: var(--muted);
+      font-weight: 500;
+      padding: 8px;
+    }
+  </style>
+</head>
+<body>
+  <main class="card">
+
+    <!-- Pantalla de inicio -->
+    <section id="inicio">
+      <h1 id="titulo-inicio"></h1>
+      <p class="muted">Responde estas preguntas y descubre cuánto me conoces de verdad.</p>
+      <label for="nombre" class="muted" style="display:block; margin-bottom:6px;">¿Cómo te llamas?</label>
+      <input id="nombre" type="text" maxlength="30" placeholder="Tu nombre (opcional)">
+      <button id="btn-empezar" class="btn-full">Empezar</button>
+    </section>
+
+    <!-- Pantalla de preguntas -->
+    <section id="quiz" class="hidden">
+      <div class="progreso"><div id="barra" class="progreso-barra"></div></div>
+      <div id="contador" class="contador"></div>
+      <h2 id="pregunta"></h2>
+      <div id="opciones" class="opciones"></div>
+      <div id="feedback" class="feedback"></div>
+      <button id="btn-siguiente" class="btn-full" disabled>Siguiente</button>
+    </section>
+
+    <!-- Pantalla de resultados -->
+    <section id="resultado" class="hidden centro">
+      <p class="muted" id="saludo"></p>
+      <div id="puntaje" class="puntaje"></div>
+      <h2 id="res-titulo"></h2>
+      <p id="res-texto" class="muted"></p>
+      <div class="stack">
+        <button id="btn-reiniciar" class="btn-full">Jugar otra vez</button>
+        <button id="btn-compartir" class="link-btn">Copiar resultado</button>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="preguntas.js"></script>
+  <script>
+    (function () {
+      const $ = (id) => document.getElementById(id);
+      const LETRAS = ["A", "B", "C", "D", "E", "F"];
+
+      let orden = [];
+      let indice = 0;
+      let aciertos = 0;
+      let respondida = false;
+      let nombre = "";
+
+      function mezclar(lista) {
+        const copia = lista.slice();
+        for (let i = copia.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [copia[i], copia[j]] = [copia[j], copia[i]];
+        }
+        return copia;
+      }
+
+      function mostrar(seccion) {
+        ["inicio", "quiz", "resultado"].forEach((id) => {
+          $(id).classList.toggle("hidden", id !== seccion);
+        });
+      }
+
+      function iniciar() {
+        nombre = $("nombre").value.trim();
+        orden = mezclar(PREGUNTAS);
+        indice = 0;
+        aciertos = 0;
+        mostrar("quiz");
+        mostrarPregunta();
+      }
+
+      function mostrarPregunta() {
+        respondida = false;
+        const p = orden[indice];
+        const total = orden.length;
+
+        $("barra").style.width = (indice / total) * 100 + "%";
+        $("contador").textContent = "Pregunta " + (indice + 1) + " de " + total;
+        $("pregunta").textContent = p.pregunta;
+        $("feedback").textContent = "";
+        $("feedback").className = "feedback";
+        $("btn-siguiente").disabled = true;
+        $("btn-siguiente").textContent = indice === total - 1 ? "Ver resultado" : "Siguiente";
+
+        const cont = $("opciones");
+        cont.innerHTML = "";
+        p.opciones.forEach((texto, i) => {
+          const b = document.createElement("button");
+          b.className = "opcion";
+          b.textContent = LETRAS[i] + ". " + texto;
+          b.addEventListener("click", () => responder(i));
+          cont.appendChild(b);
+        });
+      }
+
+      function responder(elegida) {
+        if (respondida) return;
+        respondida = true;
+        const p = orden[indice];
+        const botones = $("opciones").children;
+        const esCorrecta = elegida === p.respuesta;
+
+        if (esCorrecta) aciertos++;
+
+        Array.from(botones).forEach((b, i) => {
+          b.disabled = true;
+          if (i === p.respuesta) b.classList.add("correcta");
+          else if (i === elegida) b.classList.add("incorrecta");
+        });
+
+        const fb = $("feedback");
+        fb.textContent = esCorrecta ? "¡Acertaste!" : "Fallaste. La respuesta era: " + p.opciones[p.respuesta];
+        fb.className = "feedback " + (esCorrecta ? "ok" : "bad");
+        $("btn-siguiente").disabled = false;
+        $("btn-siguiente").focus();
+      }
+
+      function siguiente() {
+        indice++;
+        if (indice < orden.length) mostrarPregunta();
+        else mostrarResultado();
+      }
+
+      function mensajePara(porcentaje) {
+        return MENSAJES_RESULTADO.find((m) => porcentaje >= m.min) || MENSAJES_RESULTADO[MENSAJES_RESULTADO.length - 1];
+      }
+
+      function mostrarResultado() {
+        const total = orden.length;
+        const porcentaje = Math.round((aciertos / total) * 100);
+        const msg = mensajePara(porcentaje);
+
+        $("barra").style.width = "100%";
+        $("saludo").textContent = nombre ? "Gracias por jugar, " + nombre + "." : "Gracias por jugar.";
+        $("puntaje").textContent = aciertos + " / " + total;
+        $("res-titulo").textContent = msg.titulo;
+        $("res-texto").textContent = msg.texto + " (" + porcentaje + "%)";
+        mostrar("resultado");
+      }
+
+      function copiarResultado() {
+        const texto = "Saqué " + aciertos + " de " + orden.length + " en " + NOMBRE_QUIZ + " — " + $("res-titulo").textContent;
+        const btn = $("btn-compartir");
+        const marcar = (msg) => {
+          btn.textContent = msg;
+          setTimeout(() => (btn.textContent = "Copiar resultado"), 1500);
+        };
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(texto).then(
+            () => marcar("¡Copiado!"),
+            () => marcar("No se pudo copiar")
+          );
+        } else {
+          marcar("No se pudo copiar");
+        }
+      }
+
+      function init() {
+        document.title = NOMBRE_QUIZ;
+        $("titulo-inicio").textContent = NOMBRE_QUIZ;
+        $("btn-empezar").addEventListener("click", iniciar);
+        $("nombre").addEventListener("keydown", (e) => { if (e.key === "Enter") iniciar(); });
+        $("btn-siguiente").addEventListener("click", siguiente);
+        $("btn-reiniciar").addEventListener("click", () => {
+          $("nombre").value = nombre;
+          mostrar("inicio");
+        });
+        $("btn-compartir").addEventListener("click", copiarResultado);
+        mostrar("inicio");
+      }
+
+      init();
+    })();
+  </script>
+</body>
+</html>
